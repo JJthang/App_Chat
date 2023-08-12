@@ -15,7 +15,8 @@ import animationData from "../../animations/typing.json";
 var socket, selectedChatCompare;
 // eslint-disable-next-line react/prop-types, no-unused-vars
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification } =
+    ChatState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState();
   const [loading, setLoading] = useState(false);
@@ -101,7 +102,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         !selectedChatCompare ||
         selectedChatCompare._id != messageRecieved.chat._id
       ) {
-        console.log("Không khớp phòng");
+        console.log([messageRecieved, ...notification]);
+        console.log([...notification]);
+        console.log([messageRecieved]);
+        if (!notification.includes(messageRecieved)) {
+          setNotification([messageRecieved, ...notification]);
+          setFetchAgain(!fetchAgain);
+        }
       } else {
         console.log(messageRecieved);
         setMessages([...messages, messageRecieved]);
@@ -113,6 +120,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     fetchMessages();
     selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  console.log(notification, "---------------");
+
   const handSendMessage = async (value) => {
     try {
       if (value.key == "Enter" && newMessage) {
@@ -130,7 +140,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             },
           }
         );
-        console.log(data.data);
         socket.emit("new message", data.data);
         setNewMessage("");
         setMessages([...messages, data.data]);

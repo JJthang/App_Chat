@@ -18,7 +18,7 @@ import {
   useToast,
   Spinner,
 } from "@chakra-ui/react";
-import  { useState } from "react";
+import { useState } from "react";
 import {
   AiOutlineSearch,
   AiFillBell,
@@ -30,6 +30,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Loading from "../Loading";
 import UserList from "../UserAvatar/UserList";
+import { getSender } from "../config/ChatLogic";
+import NotificationBadge from "react-notification-badge";
+import { Effect } from "react-notification-badge";
 
 const SliderDrawer = () => {
   const [search, setSearch] = useState("");
@@ -38,7 +41,15 @@ const SliderDrawer = () => {
   const [loadingChat, setLoadingChat] = useState();
   const toat = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const {
+    user,
+    setSelectedChat,
+    chats,
+    setChats,
+    notification,
+    setNotification,
+  } = ChatState();
+  console.log(notification);
   const navigate = useNavigate();
   const RemoveLocal = () => {
     alert("Đăng xuất thành công");
@@ -144,9 +155,38 @@ const SliderDrawer = () => {
         >
           <Menu>
             <MenuButton p={1}>
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <AiFillBell fontSize={25} style={{ marginTop: "10px" }} />
             </MenuButton>
-            {/* <MenuList></MenuList> */}
+            <MenuList>
+              {!notification.length && <MenuItem>No Message </MenuItem>}
+              {notification?.map((item, index) => {
+                const hehe = notification.filter((data) => data != item);
+                console.log(hehe);
+                return (
+                  <MenuItem
+                    key={index}
+                    onClick={() => {
+                      setSelectedChat(item.chat);
+                      setNotification(
+                        notification.filter((data) => data != item)
+                      );
+                    }}
+                  >
+                    {" "}
+                    {item.chat.isGroupChat
+                      ? `New message in ${item.chat.chatName}`
+                      : `New message from ${getSender(
+                          user,
+                          item.chat.users
+                        )}`}{" "}
+                  </MenuItem>
+                );
+              })}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<AiOutlineArrowDown />}>
